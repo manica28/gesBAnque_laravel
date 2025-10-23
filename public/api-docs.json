@@ -1,0 +1,449 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Banque",
+        "description": "Documentation Swagger de l'API Banque",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8001",
+            "description": "Serveur local"
+        },
+        {
+            "url": "/api/v1"
+        }
+    ],
+    "paths": {
+        "/api/v1/comptes": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Lister tous les comptes actifs",
+                "description": "Récupère la liste des comptes non archivés avec filtrage avancé et pagination",
+                "operationId": "getComptes",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Numéro de page (défaut: 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Nombre d'éléments par page (défaut: 10, max: 100)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filtrer par type de compte",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Epargne",
+                                "Courant",
+                                "Cheque"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "statut",
+                        "in": "query",
+                        "description": "Filtrer par statut du compte",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "actif",
+                                "inactif",
+                                "bloque",
+                                "suspendu"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Recherche textuelle sur titulaire et numéro de compte",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Champ de tri",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "date_creation",
+                                "solde",
+                                "titulaire",
+                                "numero_compte"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Ordre de tri",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "client_id",
+                        "in": "query",
+                        "description": "Filtrer par ID client (pour les admins)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des comptes récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des comptes récupérée avec succès"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Compte"
+                                            }
+                                        },
+                                        "pagination": {
+                                            "$ref": "#/components/schemas/Pagination"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Paramètres de validation invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/comptes/archived": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Lister les comptes archivés",
+                "description": "Récupère la liste des comptes supprimés logiquement (soft deleted)",
+                "operationId": "getArchivedComptes",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Numéro de page (défaut: 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Nombre d'éléments par page (défaut: 10, max: 100)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des comptes archivés récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des comptes archivés récupérée avec succès"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Compte"
+                                            }
+                                        },
+                                        "pagination": {
+                                            "$ref": "#/components/schemas/Pagination"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Paramètres de validation invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Compte": {
+                "properties": {
+                    "id": {
+                        "description": "ID unique du compte",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "numero_compte": {
+                        "description": "Numéro unique du compte",
+                        "type": "string"
+                    },
+                    "titulaire": {
+                        "description": "Nom du titulaire",
+                        "type": "string"
+                    },
+                    "type": {
+                        "description": "Type de compte",
+                        "type": "string",
+                        "enum": [
+                            "Epargne",
+                            "Courant",
+                            "Cheque"
+                        ]
+                    },
+                    "solde": {
+                        "description": "Solde du compte",
+                        "type": "number",
+                        "format": "decimal"
+                    },
+                    "devise": {
+                        "description": "Devise du compte",
+                        "type": "string",
+                        "default": "FCFA"
+                    },
+                    "date_creation": {
+                        "description": "Date de création",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "statut": {
+                        "description": "Statut du compte",
+                        "type": "string",
+                        "enum": [
+                            "actif",
+                            "inactif",
+                            "bloque",
+                            "suspendu"
+                        ]
+                    },
+                    "metadata": {
+                        "description": "Métadonnées supplémentaires",
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Pagination": {
+                "properties": {
+                    "currentPage": {
+                        "description": "Page actuelle",
+                        "type": "integer"
+                    },
+                    "totalPages": {
+                        "description": "Nombre total de pages",
+                        "type": "integer"
+                    },
+                    "totalItems": {
+                        "description": "Nombre total d'éléments",
+                        "type": "integer"
+                    },
+                    "itemsPerPage": {
+                        "description": "Éléments par page",
+                        "type": "integer"
+                    },
+                    "hasNext": {
+                        "description": "Page suivante disponible",
+                        "type": "boolean"
+                    },
+                    "hasPrevious": {
+                        "description": "Page précédente disponible",
+                        "type": "boolean"
+                    },
+                    "links": {
+                        "properties": {
+                            "self": {
+                                "description": "Lien vers la page actuelle",
+                                "type": "string"
+                            },
+                            "first": {
+                                "description": "Lien vers la première page",
+                                "type": "string"
+                            },
+                            "last": {
+                                "description": "Lien vers la dernière page",
+                                "type": "string"
+                            },
+                            "next": {
+                                "description": "Lien vers la page suivante",
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "previous": {
+                                "description": "Lien vers la page précédente",
+                                "type": "string",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "ApiResponse": {
+                "properties": {
+                    "success": {
+                        "description": "Statut de la réponse",
+                        "type": "boolean"
+                    },
+                    "message": {
+                        "description": "Message de réponse",
+                        "type": "string"
+                    },
+                    "data": {
+                        "description": "Données de réponse",
+                        "type": "object"
+                    },
+                    "pagination": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Pagination"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "Informations de pagination"
+                    }
+                },
+                "type": "object"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "success": {
+                        "description": "Statut d'erreur",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "description": "Message d'erreur",
+                        "type": "string"
+                    },
+                    "errors": {
+                        "description": "Détails des erreurs de validation",
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            },
+            "sanctum": {
+                "type": "apiKey",
+                "description": "Enter token in format (Bearer <token>)",
+                "name": "Authorization",
+                "in": "header"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Comptes",
+            "description": "Comptes"
+        }
+    ],
+    "security": [
+        {
+            "sanctum": []
+        }
+    ]
+}
