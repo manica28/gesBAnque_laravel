@@ -23,5 +23,5 @@ module.exports = {
     '^.+\\.svg$': 'jest-transform-stub'
   },
   transformIgnorePatterns: ['/node_modules/(?!(sinon)/)'],
-  silent: true, // set to `false` to allow console.* calls to be printed
+  silent: false, // set to `false` to allow console.* calls to be printed
 };
