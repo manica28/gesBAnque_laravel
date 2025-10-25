@@ -20,8 +20,8 @@ return [
             'paths' => [
                 /*
                  * Edit to include full URL in UI for assets
-                 */
-                'use_absolute_path' => env('L5_SWAGGER_USE_ABSOLUTE_PATH', false),
+                  */
+                 'use_absolute_path' => env('L5_SWAGGER_USE_ABSOLUTE_PATH', true),
 
                 /*
                  * Path where Swagger UI assets are stored
@@ -123,7 +123,7 @@ return [
         ],
 
         'constants' => [
-            'L5_SWAGGER_CONST_HOST' => env('APP_URL', 'http://localhost:8000'),
+            'L5_SWAGGER_CONST_HOST' => env('APP_URL', 'http://localhost:8001'),
         ],
     ],
 ];
