@@ -131,22 +131,183 @@ class CompteController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * @OA\Post(
+     *     path="/api/v1/comptes",
+     *     summary="Créer un nouveau compte",
+     *     description="Crée un nouveau compte bancaire pour un client",
+     *     operationId="createCompte",
+     *     tags={"Comptes"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"id_client", "titulaire", "type_compte", "solde"},
+     *             @OA\Property(property="id_client", type="integer", example=1),
+     *             @OA\Property(property="titulaire", type="string", example="John Doe"),
+     *             @OA\Property(property="type_compte", type="string", enum={"Epargne", "Courant", "Cheque"}, example="Courant"),
+     *             @OA\Property(property="solde", type="number", format="float", example=1000.50),
+     *             @OA\Property(property="devise", type="string", example="XOF"),
+     *             @OA\Property(property="statut", type="string", enum={"actif", "inactif", "bloque", "suspendu"}, example="actif")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Compte créé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Compte créé avec succès"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Compte")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Données de validation invalides",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'id_client' => 'required|exists:clients,id_client',
+            'titulaire' => 'required|string|max:255',
+            'type_compte' => 'required|in:Epargne,Courant,Cheque',
+            'solde' => 'required|numeric|min:0',
+            'devise' => 'nullable|string|max:3',
+            'statut' => 'nullable|in:actif,inactif,bloque,suspendu',
+            'motifBlocage' => 'nullable|string|max:500',
+            'metadata' => 'nullable|array'
+        ]);
+
+        $compte = Compte::create($validated);
+
+        return $this->successResponse(
+            new CompteResource($compte),
+            'Compte créé avec succès',
+            201
+        );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/comptes/{id}",
+     *     summary="Afficher un compte spécifique",
+     *     description="Récupère les détails d'un compte spécifique",
+     *     operationId="getCompte",
+     *     tags={"Comptes"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID du compte",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Détails du compte récupérés avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Détails du compte récupérés avec succès"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Compte")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
+     */
     public function show(string $id)
     {
-        //
+        $compte = Compte::findOrFail($id);
+
+        return $this->successResponse(
+            new CompteResource($compte),
+            'Détails du compte récupérés avec succès'
+        );
     }
 
- 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/comptes/{id}",
+     *     summary="Mettre à jour un compte",
+     *     description="Met à jour les informations d'un compte existant",
+     *     operationId="updateCompte",
+     *     tags={"Comptes"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID du compte",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="titulaire", type="string", example="Jane Doe"),
+     *             @OA\Property(property="type_compte", type="string", enum={"Epargne", "Courant", "Cheque"}, example="Epargne"),
+     *             @OA\Property(property="solde", type="number", format="float", example=2500.75),
+     *             @OA\Property(property="statut", type="string", enum={"actif", "inactif", "bloque", "suspendu"}, example="actif"),
+     *             @OA\Property(property="motifBlocage", type="string", example="Suspicion de fraude"),
+     *             @OA\Property(property="metadata", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte mis à jour avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Compte mis à jour avec succès"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Compte")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Données de validation invalides",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
+     */
     public function update(Request $request, string $id)
     {
-        //
+        $compte = Compte::findOrFail($id);
+
+        $validated = $request->validate([
+            'titulaire' => 'sometimes|required|string|max:255',
+            'type_compte' => 'sometimes|required|in:Epargne,Courant,Cheque',
+            'solde' => 'sometimes|required|numeric|min:0',
+            'devise' => 'nullable|string|max:3',
+            'statut' => 'sometimes|required|in:actif,inactif,bloque,suspendu',
+            'motifBlocage' => 'nullable|string|max:500',
+            'metadata' => 'nullable|array'
+        ]);
+
+        $compte->update($validated);
+
+        return $this->successResponse(
+            new CompteResource($compte),
+            'Compte mis à jour avec succès'
+        );
     }
 
     /**
@@ -217,10 +378,94 @@ class CompteController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @OA\Delete(
+     *     path="/api/v1/comptes/{id}",
+     *     summary="Supprimer un compte (soft delete)",
+     *     description="Supprime logiquement un compte (soft delete)",
+     *     operationId="deleteCompte",
+     *     tags={"Comptes"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID du compte",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte supprimé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Compte supprimé avec succès")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
      */
     public function destroy(string $id)
     {
-        //
+        $compte = Compte::findOrFail($id);
+        $compte->delete(); // Soft delete
+
+        return $this->successResponse(
+            null,
+            'Compte supprimé avec succès'
+        );
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/comptes/{compte}/transactions",
+     *     summary="Lister les transactions d'un compte",
+     *     description="Récupère la liste des transactions associées à un compte spécifique",
+     *     operationId="getCompteTransactions",
+     *     tags={"Comptes"},
+     *     @OA\Parameter(
+     *         name="compte",
+     *         in="path",
+     *         required=true,
+     *         description="ID du compte",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Transactions du compte récupérées avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Transactions du compte récupérées avec succès"),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Transaction"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
+     */
+    public function transactions(string $compteId)
+    {
+        $compte = Compte::findOrFail($compteId);
+
+        // Pour l'instant, retourner un message placeholder
+        // À implémenter quand le modèle Transaction sera disponible
+        return $this->successResponse(
+            [],
+            'Transactions du compte récupérées avec succès'
+        );
     }
 }

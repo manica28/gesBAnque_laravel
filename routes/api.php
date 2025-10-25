@@ -31,55 +31,25 @@ Route::prefix('v1')->group(function () {
     |
     */
 
-    /*
-     * GET /api/v1/comptes
-     *
-     * Récupère la liste des comptes avec filtrage et pagination
-     *
-     * Paramètres de requête (optionnels) :
-     * - page: numéro de page (défaut: 1)
-     * - limit: nombre d'éléments par page (défaut: 10, max: 100)
-     * - type: type de compte ('Epargne', 'Courant', 'Cheque')
-     * - statut: statut du compte ('actif', 'inactif', 'bloque', 'suspendu')
-     * - search: recherche textuelle sur titulaire et numéro de compte
-     * - sort: champ de tri ('date_creation', 'solde', 'titulaire', 'numero_compte')
-     * - order: ordre de tri ('asc', 'desc')
-     * - client_id: filtrer par ID client (pour les admins)
-     *
-     * Réponse :
-     * {
-     *   "success": true,
-     *   "message": "Liste des comptes récupérée avec succès",
-     *   "data": [...],
-     *   "pagination": {...}
-     * }
-     *
-     * Codes d'erreur :
-     * - 422: Paramètres de validation invalides
-     * - 500: Erreur interne du serveur
-     */
-    Route::get('/comptes', [CompteController::class, 'index']);
+    // Routes des comptes avec noms appropriés pour HATEOAS
+    Route::apiResource('comptes', CompteController::class)->names([
+        'index' => 'api.v1.comptes.index',
+        'store' => 'api.v1.comptes.store',
+        'show' => 'api.v1.comptes.show',
+        'update' => 'api.v1.comptes.update',
+        'destroy' => 'api.v1.comptes.destroy'
+    ]);
 
-    /*
-     * GET /api/v1/comptes/archived
-     *
-     * Récupère la liste des comptes archivés (soft deleted) avec pagination
-     *
-     * Paramètres de requête (optionnels) :
-     * - page: numéro de page (défaut: 1)
-     * - limit: nombre d'éléments par page (défaut: 10, max: 100)
-     *
-     * Note: Les comptes archivés sont ceux qui ont été supprimés logiquement
-     * mais conservés en base pour l'historique
-     *
-     * Réponse :
-     * {
-     *   "success": true,
-     *   "message": "Liste des comptes archivés récupérée avec succès",
-     *   "data": [...],
-     *   "pagination": {...}
-     * }
-     */
-    Route::get('/comptes/archived', [CompteController::class, 'archived']);
+    // Route spécifique pour les comptes archivés
+    Route::get('/comptes/archived', [CompteController::class, 'archived'])->name('api.v1.comptes.archived');
+
+    // Route pour les transactions d'un compte (pour HATEOAS)
+    Route::get('/comptes/{compte}/transactions', [CompteController::class, 'transactions'])->name('api.v1.comptes.transactions');
+
+    // Routes pour les clients (nécessaires pour HATEOAS)
+    Route::get('/clients/{client}', function ($client) {
+        // Placeholder pour la route client - à implémenter plus tard
+        return response()->json(['message' => 'Client route placeholder']);
+    })->name('api.v1.clients.show');
 
 });
