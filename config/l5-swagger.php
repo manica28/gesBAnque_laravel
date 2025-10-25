@@ -123,7 +123,7 @@ return [
         ],
 
         'constants' => [
-            'L5_SWAGGER_CONST_HOST' => env('APP_URL', 'http://localhost:8001'),
+            'L5_SWAGGER_CONST_HOST' => env('APP_URL', 'https://gesbanque-laravel.onrender.com'),
         ],
     ],
 ];

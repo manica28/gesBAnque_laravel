@@ -10,13 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use OpenApi\Annotations as OA;
 
-/**
- * @OA\Info(
- *     version="1.0.0",
- *     title="API Banque",
- *     description="Documentation API du système bancaire"
- * )
- */
 class CompteController extends Controller
 {
     use ApiResponseTrait;
