@@ -74,4 +74,14 @@ class Compte extends Model
     }
 
     // Les scopes sont maintenant dans CompteQueryScope
+
+    // Attribut calculé pour le solde
+    public function getSoldeAttribute()
+    {
+        // Solde = Somme des opérations de dépôt - Somme des opérations de retrait
+        $debits = $this->transactions()->where('type_transaction', 'depot')->sum('montant');
+        $credits = $this->transactions()->where('type_transaction', 'retrait')->sum('montant');
+
+        return $debits - $credits;
+    }
 }

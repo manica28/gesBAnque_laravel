@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://127.0.0.1:8001",
+            "url": "http://127.0.0.1:8000",
             "description": "Serveur local"
         },
         {
@@ -28,7 +28,6 @@
                         "name": "page",
                         "in": "query",
                         "description": "Numéro de page (défaut: 1)",
-                        "required": false,
                         "schema": {
                             "type": "integer",
                             "minimum": 1
@@ -38,7 +37,6 @@
                         "name": "limit",
                         "in": "query",
                         "description": "Nombre d'éléments par page (défaut: 10, max: 100)",
-                        "required": false,
                         "schema": {
                             "type": "integer",
                             "maximum": 100,
@@ -49,7 +47,6 @@
                         "name": "type",
                         "in": "query",
                         "description": "Filtrer par type de compte",
-                        "required": false,
                         "schema": {
                             "type": "string",
                             "enum": [
@@ -63,7 +60,6 @@
                         "name": "statut",
                         "in": "query",
                         "description": "Filtrer par statut du compte",
-                        "required": false,
                         "schema": {
                             "type": "string",
                             "enum": [
@@ -78,17 +74,14 @@
                         "name": "search",
                         "in": "query",
                         "description": "Recherche textuelle sur titulaire et numéro de compte",
-                        "required": false,
                         "schema": {
-                            "type": "string",
-                            "maxLength": 255
+                            "type": "string"
                         }
                     },
                     {
                         "name": "sort",
                         "in": "query",
                         "description": "Champ de tri",
-                        "required": false,
                         "schema": {
                             "type": "string",
                             "enum": [
@@ -103,7 +96,6 @@
                         "name": "order",
                         "in": "query",
                         "description": "Ordre de tri",
-                        "required": false,
                         "schema": {
                             "type": "string",
                             "enum": [
@@ -116,7 +108,6 @@
                         "name": "client_id",
                         "in": "query",
                         "description": "Filtrer par ID client (pour les admins)",
-                        "required": false,
                         "schema": {
                             "type": "integer"
                         }
@@ -124,7 +115,128 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Liste des comptes récupérée avec succès",
+                        "description": "Liste des comptes récupérée avec succès"
+                    },
+                    "422": {
+                        "description": "Paramètres de validation invalides"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Créer un nouveau compte bancaire",
+                "description": "Crée un nouveau compte bancaire pour un client. Si le client n'existe pas, il est créé automatiquement.",
+                "operationId": "createCompte",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "type",
+                                    "soldeInitial",
+                                    "devise",
+                                    "client"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "description": "Type de compte",
+                                        "type": "string",
+                                        "enum": [
+                                            "cheque",
+                                            "epargne",
+                                            "courant"
+                                        ]
+                                    },
+                                    "soldeInitial": {
+                                        "description": "Solde initial minimum 10 000",
+                                        "type": "number",
+                                        "minimum": 10000
+                                    },
+                                    "devise": {
+                                        "description": "Devise du compte",
+                                        "type": "string",
+                                        "default": "XOF"
+                                    },
+                                    "client": {
+                                        "required": [
+                                            "titulaire",
+                                            "email",
+                                            "telephone",
+                                            "adresse"
+                                        ],
+                                        "properties": {
+                                            "titulaire": {
+                                                "description": "Nom complet du titulaire",
+                                                "type": "string"
+                                            },
+                                            "email": {
+                                                "description": "Email du client",
+                                                "type": "string",
+                                                "format": "email"
+                                            },
+                                            "telephone": {
+                                                "description": "Numéro de téléphone sénégalais",
+                                                "type": "string"
+                                            },
+                                            "adresse": {
+                                                "description": "Adresse du client",
+                                                "type": "string"
+                                            },
+                                            "nci": {
+                                                "description": "Numéro de carte d'identité",
+                                                "type": "string",
+                                                "nullable": true
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Compte créé avec succès"
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/api/v1/comptes/{compteId}": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Récupérer un compte spécifique",
+                "description": "Permet à l'admin de récupérer n'importe quel compte par ID, ou au client de récupérer un de ses comptes. Utilise une stratégie de recherche hybride (local + serverless).",
+                "operationId": "getCompte",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "description": "ID du compte",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails du compte récupérés avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -135,16 +247,63 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Liste des comptes récupérée avec succès"
+                                            "example": "Détails du compte récupérés avec succès"
                                         },
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Compte"
-                                            }
-                                        },
-                                        "pagination": {
-                                            "$ref": "#/components/schemas/Pagination"
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                },
+                                                "numeroCompte": {
+                                                    "type": "string",
+                                                    "example": "C00123456"
+                                                },
+                                                "titulaire": {
+                                                    "type": "string",
+                                                    "example": "Amadou Diallo"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "epargne"
+                                                },
+                                                "solde": {
+                                                    "type": "number",
+                                                    "example": 1250000
+                                                },
+                                                "devise": {
+                                                    "type": "string",
+                                                    "example": "FCFA"
+                                                },
+                                                "dateCreation": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-03-15T00:00:00Z"
+                                                },
+                                                "statut": {
+                                                    "type": "string",
+                                                    "example": "bloque"
+                                                },
+                                                "motifBlocage": {
+                                                    "type": "string",
+                                                    "example": "Inactivité de 30+ jours"
+                                                },
+                                                "metadata": {
+                                                    "properties": {
+                                                        "derniereModification": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2023-06-10T14:30:00Z"
+                                                        },
+                                                        "version": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -152,25 +311,309 @@
                             }
                         }
                     },
-                    "422": {
-                        "description": "Paramètres de validation invalides",
+                    "404": {
+                        "description": "Compte non trouvé",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "COMPTE_NOT_FOUND"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Le compte avec l'ID spécifié n'existe pas"
+                                                },
+                                                "details": {
+                                                    "properties": {
+                                                        "compteId": {
+                                                            "type": "string",
+                                                            "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
                     "500": {
-                        "description": "Erreur interne du serveur",
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Supprimer (archiver) un compte",
+                "description": "Supprime un compte bancaire en effectuant un soft delete. Le compte sera marqué comme fermé avec une date de fermeture.",
+                "operationId": "deleteCompte",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "description": "ID du compte à supprimer",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Compte supprimé avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte supprimé avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                },
+                                                "numeroCompte": {
+                                                    "type": "string",
+                                                    "example": "C00123456"
+                                                },
+                                                "statut": {
+                                                    "type": "string",
+                                                    "example": "ferme"
+                                                },
+                                                "dateFermeture": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-10-19T11:15:00Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Modifier les informations du client d'un compte",
+                "description": "Met à jour les informations personnelles du client associé à un compte bancaire. Tous les champs sont optionnels mais au moins un champ doit être fourni.",
+                "operationId": "updateClientInfo",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "description": "ID du compte",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "titulaire": {
+                                        "type": "string",
+                                        "example": "Amadou Diallo Junior"
+                                    },
+                                    "informationsClient": {
+                                        "properties": {
+                                            "telephone": {
+                                                "type": "string",
+                                                "example": "+221771234568"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "example": "amadou.diallo@example.com"
+                                            },
+                                            "password": {
+                                                "type": "string",
+                                                "example": "nouveauMotDePasse123"
+                                            },
+                                            "nci": {
+                                                "type": "string",
+                                                "example": "1234567890123"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Informations client mises à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte mis à jour avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                },
+                                                "numeroCompte": {
+                                                    "type": "string",
+                                                    "example": "C00123456"
+                                                },
+                                                "titulaire": {
+                                                    "type": "string",
+                                                    "example": "Amadou Diallo Junior"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "epargne"
+                                                },
+                                                "solde": {
+                                                    "type": "number",
+                                                    "example": 1250000
+                                                },
+                                                "devise": {
+                                                    "type": "string",
+                                                    "example": "FCFA"
+                                                },
+                                                "dateCreation": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-03-15T00:00:00Z"
+                                                },
+                                                "statut": {
+                                                    "type": "string",
+                                                    "example": "bloque"
+                                                },
+                                                "metadata": {
+                                                    "properties": {
+                                                        "derniereModification": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2025-10-19T11:00:00Z"
+                                                        },
+                                                        "version": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/api/v1/comptes/{id}": {
+            "put": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Mettre à jour les informations d'un compte bancaire",
+                "description": "Met à jour le solde, le type ou le statut d'un compte bancaire",
+                "operationId": "updateCompteBank",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du compte",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "solde": {
+                                        "type": "number",
+                                        "example": 25000
+                                    },
+                                    "statut": {
+                                        "type": "string",
+                                        "example": "actif"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "cheque"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Compte mis à jour avec succès"
+                    },
+                    "404": {
+                        "description": "Compte non trouvé"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
                     }
                 }
             }
@@ -180,81 +623,25 @@
                 "tags": [
                     "Comptes"
                 ],
-                "summary": "Lister les comptes archivés",
-                "description": "Récupère la liste des comptes supprimés logiquement (soft deleted)",
-                "operationId": "getArchivedComptes",
-                "parameters": [
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "description": "Numéro de page (défaut: 1)",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    },
-                    {
-                        "name": "limit",
-                        "in": "query",
-                        "description": "Nombre d'éléments par page (défaut: 10, max: 100)",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "maximum": 100,
-                            "minimum": 1
-                        }
-                    }
-                ],
+                "summary": "Lister les comptes archivés (soft delete)",
+                "operationId": "16c1a6483aa5ef1e683386b915b7bd99",
                 "responses": {
                     "200": {
-                        "description": "Liste des comptes archivés récupérée avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Liste des comptes archivés récupérée avec succès"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Compte"
-                                            }
-                                        },
-                                        "pagination": {
-                                            "$ref": "#/components/schemas/Pagination"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Paramètres de validation invalides",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Erreur interne du serveur",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
+                        "description": "Liste des comptes archivés récupérée avec succès"
+                    }
+                }
+            }
+        },
+        "/api/v1/comptes/{id}/transactions": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Lister les transactions d'un compte",
+                "operationId": "69156e0ffeb4daf8a465bdaf3d3e639e",
+                "responses": {
+                    "200": {
+                        "description": "Transactions récupérées avec succès"
                     }
                 }
             }

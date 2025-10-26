@@ -28,6 +28,10 @@ class Client extends Model
         'solde_initial',
     ];
 
+    protected $attributes = [
+        'nci' => null,
+    ];
+
     protected $casts = [
         'solde_initial' => 'decimal:2',
     ];

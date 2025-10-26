@@ -15,6 +15,7 @@ return [
                  * Route for accessing API documentation interface
                  */
                 'api' => 'api/documentation',
+                'docs' => 'docs',
             ],
 
             'paths' => [

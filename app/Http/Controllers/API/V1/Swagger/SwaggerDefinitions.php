@@ -12,7 +12,7 @@ use OpenApi\Annotations as OA;
  * )
  *
  * @OA\Server(
- *     url="http://127.0.0.1:8001",
+ *     url="http://127.0.0.1:8000",
  *     description="Serveur local"
  * )
  *

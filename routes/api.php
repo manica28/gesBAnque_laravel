@@ -34,7 +34,7 @@ Route::prefix('v1')->group(function () {
     // Routes des comptes avec noms appropriés pour HATEOAS
     Route::apiResource('comptes', CompteController::class)->names([
         'index' => 'api.v1.comptes.index',
-        'store' => 'api.v1.comptes.store',
+        'store' => 'api.v1.comptes.store', //post
         'show' => 'api.v1.comptes.show',
         'update' => 'api.v1.comptes.update',
         'destroy' => 'api.v1.comptes.destroy'
@@ -45,6 +45,9 @@ Route::prefix('v1')->group(function () {
 
     // Route pour les transactions d'un compte (pour HATEOAS)
     Route::get('/comptes/{compte}/transactions', [CompteController::class, 'transactions'])->name('api.v1.comptes.transactions');
+
+    // Route pour mettre à jour les informations client d'un compte
+    Route::patch('/comptes/{compte}/client', [CompteController::class, 'updateClientInfo'])->name('api.v1.comptes.updateClientInfo');
 
     // Routes pour les clients (nécessaires pour HATEOAS)
     Route::get('/clients/{client}', function ($client) {
