@@ -60,5 +60,4 @@ Route::prefix('v1')->group(function () {
         // Placeholder pour la route client - à implémenter plus tard
         return response()->json(['message' => 'Client route placeholder']);
     })->name('api.v1.clients.show');
-
 });
