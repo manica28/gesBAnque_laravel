@@ -11,10 +11,10 @@ use OpenApi\Annotations as OA;
  *     description="Documentation Swagger de l'API Banque"
  * )
  *
- * @OA\Server(
- *     url="http://127.0.0.1:8001",
- *     description="Serveur local"
- * )
+//  * @OA\Server(
+//  *     url="http://127.0.0.1:8001",
+//  *     description="Serveur local"
+//  * )
  * @OA\Server(
  *     url="https://gesbanque-laravel.onrender.com",
  *     description="Serveur de production"

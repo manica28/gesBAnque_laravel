@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 
-class Client extends Model
+class Client extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, HasApiTokens;
 
     protected $primaryKey = 'id_client';
     public $incrementing = false;
@@ -29,7 +31,7 @@ class Client extends Model
         'telephone',
         'adresse',
         'titulaire',
-        'password',
+        'mot_de_passe',
         'code',
         'solde_initial',
     ];
@@ -42,8 +44,16 @@ class Client extends Model
         'solde_initial' => 'decimal:2',
     ];
 
+    /**
+     * Get the password for authentication.
+     */
+    public function getAuthPassword()
+    {
+        return $this->mot_de_passe;
+    }
+
     protected $hidden = [
-        'password',
+        'mot_de_passe',
         'code',
     ];
 
