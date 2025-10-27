@@ -46,7 +46,7 @@ class CompteController extends Controller
                 ->paginate($validated['limit'] ?? 10);
 
             $pagination = $this->formatPagination($comptes);
-            $links = $this->formatPaginationLinks($comptes, '/api/v1/comptes', $request->query());
+            $links = $this->formatPaginationLinks($comptes, $request->url(), $request->query());
 
             return $this->successResponse(
                 CompteResource::collection($comptes),
@@ -296,7 +296,7 @@ class CompteController extends Controller
         $comptes = Compte::onlyTrashed()->paginate($perPage);
 
         $pagination = $this->formatPagination($comptes);
-        $links = $this->formatPaginationLinks($comptes, '/api/v1/comptes/archived', $request->query());
+        $links = $this->formatPaginationLinks($comptes, $request->url(), $request->query());
 
         return $this->successResponse(
             CompteResource::collection($comptes),

@@ -38,7 +38,18 @@ class CompteQueryScope implements Scope
      */
     public function scopeType(Builder $query, string $type): Builder
     {
-        return $query->where('type_compte', $type);
+        // Mapping des types pour correspondre aux valeurs de la base de données
+        $typeMapping = [
+            'Epargne' => 'Epargne',
+            'Courant' => 'Courant',
+            'Cheque' => 'Cheque',
+            'epargne' => 'Epargne',
+            'courant' => 'Courant',
+            'cheque' => 'Cheque'
+        ];
+
+        $mappedType = $typeMapping[$type] ?? $type;
+        return $query->where('type_compte', $mappedType);
     }
 
     /**
@@ -106,7 +117,18 @@ class CompteQueryScope implements Scope
     {
         // Filtrage par type
         if (isset($filters['type']) && !empty($filters['type'])) {
-            $query->where('type_compte', $filters['type']);
+            // Mapping des types pour correspondre aux valeurs de la base de données
+            $typeMapping = [
+                'Epargne' => 'Epargne',
+                'Courant' => 'Courant',
+                'Cheque' => 'Cheque',
+                'epargne' => 'Epargne',
+                'courant' => 'Courant',
+                'cheque' => 'Cheque'
+            ];
+
+            $mappedType = $typeMapping[$filters['type']] ?? $filters['type'];
+            $query->where('type_compte', $mappedType);
         }
 
         // Filtrage par statut

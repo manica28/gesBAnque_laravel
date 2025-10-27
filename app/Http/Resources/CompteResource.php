@@ -14,7 +14,8 @@ class CompteResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $baseUrl = 'https://gesbanque-laravel.onrender.com';
+        // Utiliser l'URL de base de la requête pour éviter les conflits entre environnements
+        $baseUrl = $request->getSchemeAndHttpHost();
 
         return [
             'id' => $this->id_compte,

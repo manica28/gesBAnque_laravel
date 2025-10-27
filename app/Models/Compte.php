@@ -80,6 +80,8 @@ class Compte extends Model
     }
 
     // Les scopes sont maintenant dans CompteQueryScope
+    // Pour utiliser les scopes statiquement, on peut faire :
+    // Compte::type('Cheque')->get()
 
     // Attribut calculé pour le solde
     public function getSoldeAttribute($value)
