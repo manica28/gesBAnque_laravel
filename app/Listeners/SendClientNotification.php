@@ -3,9 +3,11 @@
 namespace App\Listeners;
 
 use App\Events\ClientNotification;
+use App\Events\CompteCreated;
 use App\Mail\ClientWelcomeMail;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Twilio\Rest\Client as TwilioClient;
 
@@ -27,7 +29,7 @@ class SendClientNotification implements ShouldQueue
     }
 
     /**
-     * Gérer l'événement.
+     * Gérer l'événement ClientNotification.
      */
     public function handle(ClientNotification $event): void
     {
@@ -36,11 +38,31 @@ class SendClientNotification implements ShouldQueue
             Mail::to($event->client->user->email)->send(new ClientWelcomeMail($event->client, $event->password));
         } catch (\Exception $e) {
             // Log l'erreur mais ne pas interrompre le processus
-            \Log::error('Erreur lors de l\'envoi de l\'email: ' . $e->getMessage());
+            Log::error('Erreur lors de l\'envoi de l\'email: ' . $e->getMessage());
         }
 
         // Envoyer le SMS avec le code de vérification
         $this->sendSms($event->client->user->telephone, $event->verificationCode);
+    }
+
+    /**
+     * Gérer l'événement CompteCreated.
+     */
+    public function handleCompteCreated(CompteCreated $event): void
+    {
+        $compte = $event->compte;
+        $client = $compte->client;
+
+        try {
+            // Envoyer l'email d'authentification avec le mot de passe généré
+            Mail::to($client->email)->send(new ClientWelcomeMail($client, $client->password));
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne pas interrompre le processus
+            Log::error('Erreur lors de l\'envoi de l\'email de bienvenue: ' . $e->getMessage());
+        }
+
+        // Envoyer le SMS avec le code de vérification
+        $this->sendSms($client->telephone, $client->code);
     }
 
     /**
@@ -58,7 +80,7 @@ class SendClientNotification implements ShouldQueue
             );
         } catch (\Exception $e) {
             // Log l'erreur mais ne pas interrompre le processus
-            \Log::error('Erreur lors de l\'envoi du SMS: ' . $e->getMessage());
+            Log::error('Erreur lors de l\'envoi du SMS: ' . $e->getMessage());
         }
     }
 }

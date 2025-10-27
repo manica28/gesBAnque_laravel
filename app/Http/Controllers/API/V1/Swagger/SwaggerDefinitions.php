@@ -71,6 +71,49 @@ use OpenApi\Annotations as OA;
  *     @OA\Property(property="message", type="string", description="Message d'erreur"),
  *     @OA\Property(property="errors", type="object", nullable=true, description="Détails des erreurs de validation")
  * )
+ *
+ * @OA\Schema(
+ *     schema="ClientData",
+ *     type="object",
+ *     required={"titulaire", "email", "telephone", "adresse"},
+ *     @OA\Property(property="id", type="string", nullable=true, description="ID du client existant (optionnel)"),
+ *     @OA\Property(property="titulaire", type="string", description="Nom complet du titulaire"),
+ *     @OA\Property(property="nci", type="string", nullable=true, description="Numéro de carte d'identité sénégalaise"),
+ *     @OA\Property(property="email", type="string", format="email", description="Adresse email unique"),
+ *     @OA\Property(property="telephone", type="string", description="Numéro de téléphone sénégalais"),
+ *     @OA\Property(property="adresse", type="string", description="Adresse complète")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="CreateCompteRequest",
+ *     type="object",
+ *     required={"type", "soldeInitial", "devise", "client"},
+ *     @OA\Property(property="type", type="string", enum={"cheque", "epargne", "courant"}, description="Type de compte"),
+ *     @OA\Property(property="soldeInitial", type="number", minimum=10000, description="Solde initial minimum 10 000"),
+ *     @OA\Property(property="devise", type="string", default="FCFA", description="Devise du compte"),
+ *     @OA\Property(property="client", ref="#/components/schemas/ClientData", description="Informations du client")
+ * )
+ *
+ * @OA\Schema(
+ *     schema="CreateCompteResponse",
+ *     type="object",
+ *     @OA\Property(property="success", type="boolean", example=true),
+ *     @OA\Property(property="message", type="string", example="Compte créé avec succès"),
+ *     @OA\Property(property="data", type="object",
+ *         @OA\Property(property="id", type="string", format="uuid", example="660f9511-f30c-52e5-b827-557766551111"),
+ *         @OA\Property(property="numeroCompte", type="string", example="C00123460"),
+ *         @OA\Property(property="titulaire", type="string", example="Cheikh Sy"),
+ *         @OA\Property(property="type", type="string", example="cheque"),
+ *         @OA\Property(property="solde", type="number", example=500000),
+ *         @OA\Property(property="devise", type="string", example="FCFA"),
+ *         @OA\Property(property="dateCreation", type="string", format="date-time", example="2025-10-19T10:30:00Z"),
+ *         @OA\Property(property="statut", type="string", example="actif"),
+ *         @OA\Property(property="metadata", type="object",
+ *             @OA\Property(property="derniereModification", type="string", format="date-time", example="2025-10-19T10:30:00Z"),
+ *             @OA\Property(property="version", type="integer", example=1)
+ *         )
+ *     )
+ * )
  */
 class SwaggerDefinitions
 {

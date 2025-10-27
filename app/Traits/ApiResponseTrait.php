@@ -87,4 +87,12 @@ trait ApiResponseTrait
         $queryString = http_build_query($params);
         return $baseUrl . ($queryString ? '?' . $queryString : '');
     }
+
+    /**
+     * Formatage d'un message d'erreur en bloc de code
+     */
+    protected function formatErrorAsCode($errorMessage)
+    {
+        return "```\n" . $errorMessage . "\n```";
+    }
 }

@@ -25,6 +25,12 @@ class Client extends Model
     protected $fillable = [
         'id_user',
         'nci',
+        'email',
+        'telephone',
+        'adresse',
+        'titulaire',
+        'password',
+        'code',
         'solde_initial',
     ];
 
@@ -34,6 +40,11 @@ class Client extends Model
 
     protected $casts = [
         'solde_initial' => 'decimal:2',
+    ];
+
+    protected $hidden = [
+        'password',
+        'code',
     ];
 
     // Relation vers User

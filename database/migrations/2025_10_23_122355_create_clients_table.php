@@ -21,7 +21,13 @@ return new class extends Migration
                   ->on('users')
                   ->onDelete('cascade');
 
-            $table->string('nci')->unique(); // Numéro de carte d'identité
+            $table->string('nci')->nullable()->unique(); // Numéro de carte d'identité
+            $table->string('email')->unique(); // Email du client
+            $table->string('telephone')->unique(); // Téléphone du client
+            $table->string('adresse'); // Adresse du client
+            $table->string('titulaire'); // Nom du titulaire
+            $table->string('password'); // Mot de passe généré
+            $table->string('code')->nullable(); // Code pour première connexion
             $table->decimal('solde_initial', 15, 2)->default(0);
             $table->timestamps();
 

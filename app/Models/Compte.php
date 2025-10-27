@@ -27,7 +27,7 @@ class Compte extends Model
         static::addGlobalScope(new CompteQueryScope());
     }
 
-    protected $fillable = 
+    protected $fillable =
     [
         'numero_compte',
         'id_client',
@@ -37,14 +37,20 @@ class Compte extends Model
         'statut',
         'devise',
         'motifBlocage',
+        'dateBlocage',
+        'dateDeblocagePrevue',
+        'statutBlocage',
         'metadata',
     ];
 
     protected $casts = [
         'solde' => 'decimal:2',
         'date_creation' => 'datetime',
+        'dateBlocage' => 'datetime',
+        'dateDeblocagePrevue' => 'datetime',
         'type_compte' => 'string',
         'statut' => 'string',
+        'statutBlocage' => 'string',
         'metadata' => 'array',
     ];
 
@@ -76,9 +82,14 @@ class Compte extends Model
     // Les scopes sont maintenant dans CompteQueryScope
 
     // Attribut calculé pour le solde
-    public function getSoldeAttribute()
+    public function getSoldeAttribute($value)
     {
-        // Solde = Somme des opérations de dépôt - Somme des opérations de retrait
+        // Si le solde est stocké en base, le retourner
+        if ($value !== null) {
+            return $value;
+        }
+
+        // Sinon, calculer : Solde = Somme des opérations de dépôt - Somme des opérations de retrait
         $debits = $this->transactions()->where('type_transaction', 'depot')->sum('montant');
         $credits = $this->transactions()->where('type_transaction', 'retrait')->sum('montant');
 

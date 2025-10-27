@@ -18,13 +18,24 @@ class LoggingMiddleware
     {
         $startTime = microtime(true);
 
-        // Log de la requête entrante
-        Log::info('Requête API reçue', [
+        // Extraire le nom de l'opération depuis l'URL
+        $operationName = $this->extractOperationName($request);
+
+        // Log de la requête entrante avec plus de détails
+        Log::info('Opération de création de compte - Requête reçue', [
+            'date_heure' => now()->toISOString(),
+            'host' => $request->getHost(),
+            'nom_operation' => $operationName,
+            'ressource' => $request->path(),
             'method' => $request->method(),
             'url' => $request->fullUrl(),
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
-            'timestamp' => now()->toISOString(),
+            'headers' => [
+                'accept' => $request->header('Accept'),
+                'content_type' => $request->header('Content-Type'),
+                'authorization' => $request->header('Authorization') ? 'Bearer ***' : null,
+            ],
         ]);
 
         $response = $next($request);
@@ -32,15 +43,45 @@ class LoggingMiddleware
         $endTime = microtime(true);
         $duration = round(($endTime - $startTime) * 1000, 2); // en millisecondes
 
-        // Log de la réponse
-        Log::info('Réponse API envoyée', [
+        // Log de la réponse avec le statut
+        Log::info('Opération de création de compte - Réponse envoyée', [
+            'date_heure' => now()->toISOString(),
+            'host' => $request->getHost(),
+            'nom_operation' => $operationName,
+            'ressource' => $request->path(),
             'method' => $request->method(),
             'url' => $request->fullUrl(),
-            'status' => $response->getStatusCode(),
+            'status_code' => $response->getStatusCode(),
             'duration_ms' => $duration,
-            'timestamp' => now()->toISOString(),
+            'response_size' => strlen($response->getContent()),
         ]);
 
         return $response;
+    }
+
+    /**
+     * Extraire le nom de l'opération depuis la requête.
+     */
+    private function extractOperationName(Request $request): string
+    {
+        $path = $request->path();
+        $method = $request->method();
+
+        // Déterminer le nom de l'opération basé sur la route
+        if (str_contains($path, 'comptes') && $method === 'POST') {
+            return 'creation_compte';
+        } elseif (str_contains($path, 'comptes') && str_contains($path, 'bloquer')) {
+            return 'blocage_compte';
+        } elseif (str_contains($path, 'comptes') && str_contains($path, 'debloquer')) {
+            return 'deblocage_compte';
+        } elseif (str_contains($path, 'comptes') && $method === 'GET') {
+            return 'consultation_compte';
+        } elseif (str_contains($path, 'comptes') && $method === 'PUT') {
+            return 'modification_compte';
+        } elseif (str_contains($path, 'comptes') && $method === 'DELETE') {
+            return 'suppression_compte';
+        }
+
+        return 'operation_api_generique';
     }
 }

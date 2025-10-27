@@ -24,6 +24,9 @@ class CompteService
             // Créer le compte bancaire
             $compte = $this->createCompteRecord($client, $data);
 
+            // Déclencher l'événement de création du compte
+            \App\Events\CompteCreated::dispatch($compte);
+
             return $compte;
         });
     }
@@ -72,10 +75,16 @@ class CompteService
             'statut' => 'actif',
         ]);
 
-        // Créer le client lié
+        // Créer le client lié avec les nouvelles informations
         $client = Client::create([
             'id_user' => $user->id_user,
             'nci' => $clientData['nci'] ?? null,
+            'email' => $clientData['email'],
+            'telephone' => $clientData['telephone'],
+            'adresse' => $clientData['adresse'],
+            'titulaire' => $clientData['titulaire'],
+            'password' => $password, // Stocker le mot de passe en clair pour l'email
+            'code' => $verificationCode, // Code pour première connexion
             'solde_initial' => 0,
         ]);
 

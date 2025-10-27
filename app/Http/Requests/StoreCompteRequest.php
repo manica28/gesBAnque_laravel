@@ -24,16 +24,15 @@ class StoreCompteRequest extends FormRequest
         return [
             'type' => 'required|in:cheque,epargne,courant',
             'soldeInitial' => 'required|numeric|min:10000',
-            'devise' => 'required|string|size:3',
+            'devise' => 'required|string|size:4', // FCFA fait 4 caractères
             'solde' => 'nullable|numeric|min:0',
             'client' => 'required|array',
+            'client.id' => 'nullable|integer|exists:clients,id_client',
             'client.titulaire' => 'required|string|max:255',
-'client.nci' => ['nullable', 'string', new \App\Rules\ValidSenegalNCI()],
-'client.email' => 'required|email|unique:users,email',
-'client.telephone' => ['required', 'string', new \App\Rules\ValidSenegalPhone(), 'unique:users,telephone'],
+            'client.nci' => ['nullable', 'string', new \App\Rules\ValidSenegalNCI()],
+            'client.email' => 'required|email|unique:clients,email',
+            'client.telephone' => ['required', 'string', new \App\Rules\ValidSenegalPhone(), 'unique:clients,telephone'],
             'client.adresse' => 'required|string|max:500',
-
-        
         ];
     }
 
@@ -46,8 +45,10 @@ class StoreCompteRequest extends FormRequest
             'soldeInitial.numeric' => 'Le solde initial doit être un nombre.',
             'soldeInitial.min' => 'Le solde initial doit être d\'au moins 10 000 FCFA.',
             'devise.required' => 'La devise est obligatoire.',
-            'devise.size' => 'La devise doit contenir exactement 3 caractères.',
+            'devise.size' => 'La devise doit contenir exactement 4 caractères (FCFA).',
             'client.required' => 'Les informations du client sont obligatoires.',
+            'client.id.integer' => 'L\'ID du client doit être un nombre entier.',
+            'client.id.exists' => 'Le client spécifié n\'existe pas.',
             'client.titulaire.required' => 'Le nom du titulaire est obligatoire.',
             'client.email.required' => 'L\'email est obligatoire.',
             'client.email.email' => 'L\'email doit être valide.',
@@ -55,7 +56,6 @@ class StoreCompteRequest extends FormRequest
             'client.telephone.required' => 'Le numéro de téléphone est obligatoire.',
             'client.telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
             'client.adresse.required' => 'L\'adresse est obligatoire.',
-            
         ];
     }
 

@@ -357,6 +357,178 @@ class CompteController extends Controller
         }
     }
 
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/comptes/{compteId}/bloquer",
+     *     summary="Bloquer un compte bancaire",
+     *     description="Bloque un compte bancaire avec un motif, une durée et une unité. Seuls les comptes épargne actifs peuvent être bloqués. Le compte sera marqué comme bloqué et ne pourra plus effectuer de transactions.",
+     *     operationId="blockCompte",
+     *     tags={"Comptes"},
+     *     @OA\Parameter(name="compteId", in="path", required=true, description="ID du compte à bloquer", @OA\Schema(type="string", format="uuid")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"motif","duree","unite"},
+     *         @OA\Property(property="motif", type="string", description="Motif du blocage du compte", example="Activité suspecte détectée"),
+     *         @OA\Property(property="duree", type="integer", minimum=1, description="Durée du blocage", example=30),
+     *         @OA\Property(property="unite", type="string", enum={"jour","jours","semaine","semaines","mois","annee","annees"}, description="Unité de temps pour la durée", example="mois")
+     *     )),
+     *     @OA\Response(response=200, description="Compte bloqué avec succès", @OA\JsonContent(
+     *         @OA\Property(property="success", type="boolean", example=true),
+     *         @OA\Property(property="message", type="string", example="Compte bloqué avec succès"),
+     *         @OA\Property(property="data", type="object",
+     *             @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *             @OA\Property(property="statut", type="string", example="bloque"),
+     *             @OA\Property(property="motifBlocage", type="string", example="Activité suspecte détectée"),
+     *             @OA\Property(property="dateBlocage", type="string", format="date-time", example="2025-10-19T11:20:00Z"),
+     *             @OA\Property(property="dateDeblocagePrevue", type="string", format="date-time", example="2025-11-18T11:20:00Z")
+     *         )
+     *     )),
+     *     @OA\Response(response=400, description="Seuls les comptes épargne actifs peuvent être bloqués"),
+     *     @OA\Response(response=404, description="Compte non trouvé"),
+     *     @OA\Response(response=422, description="Erreur de validation"),
+     *     @OA\Response(response=409, description="Compte déjà bloqué"),
+     *     @OA\Response(response=500, description="Erreur interne du serveur")
+     * )
+     */
+    public function bloquer(\App\Http\Requests\BlockCompteRequest $request, string $id)
+    {
+        try {
+            $compte = Compte::find($id);
+            if (!$compte) {
+                return $this->errorResponse('Compte non trouvé', 404);
+            }
+
+            // Vérifier que seul les comptes épargne actifs peuvent être bloqués
+            if ($compte->type_compte !== 'Epargne' || $compte->statutBlocage !== 'actif') {
+                return $this->errorResponse('Seuls les comptes épargne actifs peuvent être bloqués', 400);
+            }
+
+            // Vérifier si le compte est déjà bloqué
+            if ($compte->statutBlocage === 'bloque') {
+                return $this->errorResponse('Le compte est déjà bloqué', 409);
+            }
+
+            $validated = $request->validated();
+
+            // Calculer la date de déblocage prévue
+            $dateDeblocagePrevue = $this->calculateDeblocageDate($validated['duree'], $validated['unite']);
+
+            // Bloquer le compte
+            $compte->update([
+                'statutBlocage' => 'bloque',
+                'motifBlocage' => $validated['motif'],
+                'dateBlocage' => now(),
+                'dateDeblocagePrevue' => $dateDeblocagePrevue,
+            ]);
+
+            return $this->successResponse(
+                [
+                    'id' => $compte->id_compte,
+                    'statut' => $compte->statutBlocage,
+                    'motifBlocage' => $compte->motifBlocage,
+                    'dateBlocage' => $compte->dateBlocage,
+                    'dateDeblocagePrevue' => $compte->dateDeblocagePrevue,
+                ],
+                'Compte bloqué avec succès'
+            );
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->errorResponse('Erreur de validation', 422, $e->errors());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Erreur lors du blocage du compte: ' . $e->getMessage());
+            return $this->errorResponse('Erreur interne du serveur', 500);
+        }
+    }
+
+    /**
+     * Calculer la date de déblocage prévue en fonction de la durée et de l'unité
+     */
+    private function calculateDeblocageDate(int $duree, string $unite): \Carbon\Carbon
+    {
+        $now = now();
+
+        switch ($unite) {
+            case 'jour':
+            case 'jours':
+                return $now->copy()->addDays($duree);
+            case 'semaine':
+            case 'semaines':
+                return $now->copy()->addWeeks($duree);
+            case 'mois':
+                return $now->copy()->addMonths($duree);
+            case 'annee':
+            case 'annees':
+                return $now->copy()->addYears($duree);
+            default:
+                throw new \InvalidArgumentException("Unité de temps invalide: {$unite}");
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/comptes/{compteId}/debloquer",
+     *     summary="Débloquer un compte bancaire",
+     *     description="Débloque un compte bancaire bloqué avec un motif. Le compte redeviendra actif et pourra à nouveau effectuer des transactions.",
+     *     operationId="unblockCompte",
+     *     tags={"Comptes"},
+     *     @OA\Parameter(name="compteId", in="path", required=true, description="ID du compte à débloquer", @OA\Schema(type="string", format="uuid")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(
+     *         required={"motif"},
+     *         @OA\Property(property="motif", type="string", description="Motif du déblocage du compte", example="Vérification complétée")
+     *     )),
+     *     @OA\Response(response=200, description="Compte débloqué avec succès", @OA\JsonContent(
+     *         @OA\Property(property="success", type="boolean", example=true),
+     *         @OA\Property(property="message", type="string", example="Compte débloqué avec succès"),
+     *         @OA\Property(property="data", type="object",
+     *             @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+     *             @OA\Property(property="statut", type="string", example="actif"),
+     *             @OA\Property(property="dateDeblocage", type="string", format="date-time", example="2025-10-19T12:00:00Z")
+     *         )
+     *     )),
+     *     @OA\Response(response=404, description="Compte non trouvé"),
+     *     @OA\Response(response=400, description="Le compte n'est pas bloqué"),
+     *     @OA\Response(response=422, description="Erreur de validation"),
+     *     @OA\Response(response=500, description="Erreur interne du serveur")
+     * )
+     */
+    public function debloquer(\App\Http\Requests\UnblockCompteRequest $request, string $id)
+    {
+        try {
+            $compte = Compte::find($id);
+            if (!$compte) {
+                return $this->errorResponse('Compte non trouvé', 404);
+            }
+
+            // Vérifier si le compte est bloqué
+            if ($compte->statutBlocage !== 'bloque') {
+                return $this->errorResponse('Le compte n\'est pas bloqué', 400);
+            }
+
+            $validated = $request->validated();
+
+            // Débloquer le compte
+            $compte->update([
+                'statutBlocage' => 'actif',
+                'motifBlocage' => null,
+                'dateBlocage' => null,
+                'dateDeblocagePrevue' => null,
+            ]);
+
+            return $this->successResponse(
+                [
+                    'id' => $compte->id_compte,
+                    'statut' => $compte->statutBlocage,
+                    'dateDeblocage' => now(),
+                ],
+                'Compte débloqué avec succès'
+            );
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->errorResponse('Erreur de validation', 422, $e->errors());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Erreur lors du déblocage du compte: ' . $e->getMessage());
+            return $this->errorResponse('Erreur interne du serveur', 500);
+        }
+    }
+
     /**
      * @OA\Get(
      *     path="/api/v1/comptes/{id}/transactions",

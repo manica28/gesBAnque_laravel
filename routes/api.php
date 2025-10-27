@@ -49,6 +49,12 @@ Route::prefix('v1')->group(function () {
     // Route pour mettre à jour les informations client d'un compte
     Route::patch('/comptes/{compte}/client', [CompteController::class, 'updateClientInfo'])->name('api.v1.comptes.updateClientInfo');
 
+    // Route pour bloquer un compte
+    Route::post('/comptes/{compte}/bloquer', [CompteController::class, 'bloquer'])->name('api.v1.comptes.bloquer');
+
+    // Route pour débloquer un compte
+    Route::post('/comptes/{compte}/debloquer', [CompteController::class, 'debloquer'])->name('api.v1.comptes.debloquer');
+
     // Routes pour les clients (nécessaires pour HATEOAS)
     Route::get('/clients/{client}', function ($client) {
         // Placeholder pour la route client - à implémenter plus tard

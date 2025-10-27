@@ -25,6 +25,30 @@ class Handler extends ExceptionHandler
     ];
 
     /**
+     * Render an exception into an HTTP response.
+     */
+    public function render($request, Throwable $exception)
+    {
+        // Pour les requêtes API, retourner toujours du JSON avec l'erreur formatée
+        if ($request->is('api/*') || $request->expectsJson() || $request->isJson()) {
+            $statusCode = $this->getStatusCode($exception);
+            $message = $this->getExceptionMessage($exception);
+
+            return $this->errorResponse(
+                $this->formatErrorAsCode($message),
+                $statusCode,
+                [
+                    'exception' => get_class($exception),
+                    'file' => $exception->getFile(),
+                    'line' => $exception->getLine()
+                ]
+            );
+        }
+
+        return parent::render($request, $exception);
+    }
+
+    /**
      * Register the exception handling callbacks for the application.
      */
     public function register(): void
@@ -32,31 +56,39 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
 
-        $this->renderable(function (MethodNotAllowedHttpException $e, Request $request) {
-            // Log pour déboguer
-            Log::info('MethodNotAllowedHttpException caught', [
-                'method' => $request->method(),
-                'path' => $request->path(),
-                'is_api' => $request->is('api/*'),
-                'expects_json' => $request->expectsJson(),
-                'is_json' => $request->isJson(),
-                'accept' => $request->header('Accept'),
-                'content_type' => $request->header('Content-Type')
-            ]);
+    /**
+     * Get the appropriate status code for the exception.
+     */
+    private function getStatusCode(Throwable $exception): int
+    {
+        // Pour les exceptions HTTP de Symfony qui ont getStatusCode
+        if (method_exists($exception, 'getStatusCode')) {
+            /** @var \Symfony\Component\HttpKernel\Exception\HttpException $exception */
+            return $exception->getStatusCode();
+        }
 
-            // Vérifier si c'est une requête API, JSON-expecting, ou avec contenu JSON
-            if ($request->is('api/*') || $request->expectsJson() || $request->isJson()) {
-                return $this->errorResponse(
-                    'La méthode ' . $request->method() . ' n\'est pas supportée pour cette route.',
-                    405,
-                    [
-                        'method' => $request->method(),
-                        'route' => $request->path(),
-                        'supported_methods' => $e->getHeaders()['Allow'] ?? []
-                    ]
-                );
-            }
-        });
+        // Cas spécifiques
+        if ($exception instanceof MethodNotAllowedHttpException) {
+            return 405;
+        }
+
+        // Pour les exceptions Laravel qui ont getCode()
+        $code = $exception->getCode();
+        if (is_int($code) && $code >= 400 && $code < 600) {
+            return $code;
+        }
+
+        // Par défaut, code d'erreur interne du serveur
+        return 500;
+    }
+
+    /**
+     * Get the exception message.
+     */
+    private function getExceptionMessage(Throwable $exception): string
+    {
+        return $exception->getMessage() ?: 'Une erreur inattendue est survenue';
     }
 }
