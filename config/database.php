@@ -75,14 +75,11 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', env('PGSSLMODE', 'require')),
-            'options' => extension_loaded('pdo_pgsql') ? array_filter([
-                PDO::PGSQL_ATTR_DISABLE_PREPARES => true,
-                PDO::ATTR_EMULATE_PREPARES => true,
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_PERSISTENT => false,
-            ]) : [],
+            'sslmode' => env('DB_SSLMODE',  'require'),
+            'options' => [
+                    PDO::ATTR_EMULATE_PREPARES => true,
+                    PDO::ATTR_STRINGIFY_FETCHES => true,
+                ],
         ],
 
         'sqlsrv' => [
