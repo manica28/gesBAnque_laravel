@@ -39,6 +39,14 @@ class CompteController extends Controller
     public function index(Request $request)
     {
         try {
+            // Test de connexion à la base de données
+            try {
+                \Illuminate\Support\Facades\DB::connection()->getPdo();
+            } catch (\Exception $e) {
+                Log::error('Erreur de connexion DB: ' . $e->getMessage());
+                return $this->errorResponse('Erreur de connexion à la base de données', 500);
+            }
+
             $validated = $request->validate(\App\Models\Scopes\CompteQueryScope::getValidationRules());
 
             $query = Compte::query();
