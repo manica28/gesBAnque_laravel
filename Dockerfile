@@ -46,11 +46,11 @@ RUN echo "APP_NAME=projet_banque_laravel" > .env && \
     echo "LOG_LEVEL=error" >> .env && \
     echo "" >> .env && \
     echo "DB_CONNECTION=pgsql" >> .env && \
-    echo "DB_HOST=\${DB_HOST}" >> .env && \
-    echo "DB_PORT=\${DB_PORT}" >> .env && \
-    echo "DB_DATABASE=\${DB_DATABASE}" >> .env && \
-    echo "DB_USERNAME=\${DB_USERNAME}" >> .env && \
-    echo "DB_PASSWORD=\${DB_PASSWORD}" >> .env && \
+    echo "DB_HOST=dpg-d3tq6m3ipnbc738fnb7g-a.oregon-postgres.render.com" >> .env && \
+    echo "DB_PORT=5432" >> .env && \
+    echo "DB_DATABASE=ges_banque_laravel" >> .env && \
+    echo "DB_USERNAME=ges_banque_laravel_user" >> .env && \
+    echo "DB_PASSWORD=U6Oi7pW54NCgdByXdr8zHQPUvGHJcxzA" >> .env && \
     echo "" >> .env && \
     echo "CACHE_DRIVER=file" >> .env && \
     echo "SESSION_DRIVER=file" >> .env && \
