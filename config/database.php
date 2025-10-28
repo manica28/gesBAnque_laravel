@@ -75,10 +75,10 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('PGSSLMODE', 'require'),
-            'options' => [
+            'sslmode' => env('DB_SSLMODE', env('PGSSLMODE', 'require')),
+            'options' => extension_loaded('pdo_pgsql') ? array_filter([
                 PDO::PGSQL_ATTR_DISABLE_PREPARES => true,
-            ],
+            ]) : [],
         ],
 
         'sqlsrv' => [
