@@ -16,6 +16,7 @@ return [
                  */
                 'api' => 'api/documentation',
                 'docs' => 'docs',
+                'swagger-ui' => 'docs',
             ],
 
             'paths' => [
@@ -57,6 +58,7 @@ return [
     'defaults' => [
         'routes' => [
             'docs' => 'docs',
+            'swagger-ui' => 'docs',
             'oauth2_callback' => 'api/oauth2-callback',
             'middleware' => [
                 'api' => [],
@@ -122,6 +124,11 @@ return [
                 ],
             ],
         ],
+        'proxy' => false,
+        'additional_config_url' => null,
+        'operations_sort' => env('L5_SWAGGER_OPERATIONS_SORT', null),
+        'validator_url' => null,
+        'try_it_out_enabled' => true,
 
         'constants' => [
             'L5_SWAGGER_CONST_HOST' => env('APP_URL', 'https://gesbanque-laravel.onrender.com'),
