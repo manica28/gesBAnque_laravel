@@ -78,6 +78,7 @@ return [
             'sslmode' => env('DB_SSLMODE', env('PGSSLMODE', 'require')),
             'options' => extension_loaded('pdo_pgsql') ? array_filter([
                 PDO::PGSQL_ATTR_DISABLE_PREPARES => true,
+                PDO::ATTR_EMULATE_PREPARES => true,
             ]) : [],
         ],
 
