@@ -75,10 +75,10 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => 'require',
-            'sslcert' => env('DB_SSL_CERT'),
-            'sslkey' => env('DB_SSL_KEY'),
-            'sslrootcert' => env('DB_SSL_ROOT_CERT'),
+            'sslmode' => env('PGSSLMODE', 'require'),
+            'options' => [
+                PDO::PGSQL_ATTR_DISABLE_PREPARES => true,
+            ],
         ],
 
         'sqlsrv' => [
