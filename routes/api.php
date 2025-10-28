@@ -21,20 +21,6 @@ use App\Http\Controllers\API\V1\AuthController;
 // Routes API versionnées
 Route::prefix('v1')->group(function () {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Routes d'Authentification
-    |--------------------------------------------------------------------------
-    |
-    | Routes pour l'authentification OAuth2 avec Passport
-    |
-    */
-
-    Route::prefix('auth')->group(function () {
-        Route::post('/login', [AuthController::class, 'login']);
-        Route::post('/refresh', [AuthController::class, 'refresh']);
-        Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:api');
-    });
 
     /*
     |--------------------------------------------------------------------------
@@ -65,15 +51,11 @@ Route::prefix('v1')->group(function () {
     // Route pour mettre à jour les informations client d'un compte
     Route::patch('/comptes/{compte}/client', [CompteController::class, 'updateClientInfo'])->name('api.v1.comptes.updateClientInfo');
 
-    // Route pour bloquer un compte (nécessite authentification admin)
-    Route::post('/comptes/{compte}/bloquer', [CompteController::class, 'bloquer'])
-        ->middleware(['auth:api', 'role:admin'])
-        ->name('api.v1.comptes.bloquer');
+    // Route pour bloquer un compte
+    Route::post('/comptes/{compte}/bloquer', [CompteController::class, 'bloquer'])->name('api.v1.comptes.bloquer');
 
-    // Route pour débloquer un compte (nécessite authentification admin)
-    Route::post('/comptes/{compte}/debloquer', [CompteController::class, 'debloquer'])
-        ->middleware(['auth:api', 'role:admin'])
-        ->name('api.v1.comptes.debloquer');
+    // Route pour débloquer un compte
+    Route::post('/comptes/{compte}/debloquer', [CompteController::class, 'debloquer'])->name('api.v1.comptes.debloquer');
 
     // Routes pour les clients (nécessaires pour HATEOAS)
     Route::get('/clients/{client}', function ($client) {

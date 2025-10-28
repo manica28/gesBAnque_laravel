@@ -25,8 +25,18 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('comptes', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-            $table->dropColumn(['devise', 'motifBlocage', 'metadata']);
+            // Supprimer softDeletes
+            if (Schema::hasColumn('comptes', 'deleted_at')) {
+                $table->dropSoftDeletes();
+            }
+            
+            // Supprimer les autres colonnes une par une pour éviter les erreurs
+            $columns = ['devise', 'motifBlocage', 'metadata'];
+            foreach ($columns as $column) {
+                if (Schema::hasColumn('comptes', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
         });
     }
 };

@@ -16,9 +16,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: laravel
-      POSTGRES_USER: laravel
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ges_banque_laravel
+      POSTGRES_USER: ges_banque_laravel_user
+      POSTGRES_PASSWORD: U6Oi7pW54NCgdByXdr8zHQPUvGHJcxzA
     ports:
       - "5432:5432"
     volumes:

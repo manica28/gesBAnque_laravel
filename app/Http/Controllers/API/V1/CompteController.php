@@ -54,6 +54,9 @@ class CompteController extends Controller
                 200,
                 array_merge($pagination, ['links' => $links])
             );
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Erreur de base de données dans index comptes: ' . $e->getMessage());
+            return $this->errorResponse('Erreur de connexion à la base de données', 500);
         } catch (\Throwable $e) {
             Log::error('Erreur dans index comptes: ' . $e->getMessage());
             return $this->errorResponse('Erreur interne du serveur', 500);
@@ -399,8 +402,12 @@ class CompteController extends Controller
             }
 
             // Vérifier que seul les comptes épargne actifs peuvent être bloqués
-            if ($compte->type_compte !== 'Epargne' || $compte->statutBlocage !== 'actif') {
-                return $this->errorResponse('Seuls les comptes épargne actifs peuvent être bloqués', 400);
+            if ($compte->type_compte !== 'Epargne') {
+                return $this->errorResponse('Seuls les comptes épargne peuvent être bloqués', 400);
+            }
+
+            if ($compte->statutBlocage !== 'actif') {
+                return $this->errorResponse('Le compte doit être actif pour être bloqué', 400);
             }
 
             // Vérifier si le compte est déjà bloqué
@@ -431,6 +438,9 @@ class CompteController extends Controller
                 ],
                 'Compte bloqué avec succès'
             );
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Illuminate\Support\Facades\Log::error('Erreur de base de données lors du blocage: ' . $e->getMessage());
+            return $this->errorResponse('Erreur de connexion à la base de données', 500);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->errorResponse('Erreur de validation', 422, $e->errors());
         } catch (\Throwable $e) {
@@ -521,6 +531,9 @@ class CompteController extends Controller
                 ],
                 'Compte débloqué avec succès'
             );
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Illuminate\Support\Facades\Log::error('Erreur de base de données lors du déblocage: ' . $e->getMessage());
+            return $this->errorResponse('Erreur de connexion à la base de données', 500);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->errorResponse('Erreur de validation', 422, $e->errors());
         } catch (\Throwable $e) {

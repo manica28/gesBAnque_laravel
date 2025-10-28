@@ -34,14 +34,20 @@ class Handler extends ExceptionHandler
             $statusCode = $this->getStatusCode($exception);
             $message = $this->getExceptionMessage($exception);
 
-            return $this->errorResponse(
-                $this->formatErrorAsCode($message),
-                $statusCode,
-                [
+            // En production, ne pas exposer les détails techniques
+            $debugInfo = [];
+            if (config('app.debug')) {
+                $debugInfo = [
                     'exception' => get_class($exception),
                     'file' => $exception->getFile(),
                     'line' => $exception->getLine()
-                ]
+                ];
+            }
+
+            return $this->errorResponse(
+                config('app.debug') ? $this->formatErrorAsCode($message) : $message,
+                $statusCode,
+                $debugInfo
             );
         }
 

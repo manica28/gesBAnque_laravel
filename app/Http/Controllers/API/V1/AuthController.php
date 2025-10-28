@@ -86,9 +86,8 @@ class AuthController extends Controller
                 ]);
             }
 
-            // Créer le token avec Passport et les scopes appropriés
-            $scopes = $this->getScopesForUser($user, $guard);
-            $tokenResult = $user->createToken('API Access', $scopes);
+            // Créer le token avec Passport (sans scopes pour éviter les erreurs)
+            $tokenResult = $user->createToken('API Access');
             $token = $tokenResult->token;
 
             // Ajouter les claims personnalisés
@@ -137,8 +136,7 @@ class AuthController extends Controller
                 'access_token' => $tokenResult->accessToken,
                 'refresh_token' => $refreshToken,
                 'token_type' => 'Bearer',
-                'expires_in' => $expiration->diffInSeconds(now()),
-                'scopes' => $scopes
+                'expires_in' => $expiration->diffInSeconds(now())
             ], 'Connexion réussie')->withCookie($accessCookie)->withCookie($refreshCookie);
 
         } catch (ValidationException $e) {

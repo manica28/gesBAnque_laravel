@@ -16,9 +16,17 @@ class ClientFactory extends Factory
      */
     public function definition(): array
     {
+        $user = \App\Models\User::factory()->create(['type_user' => 'client']);
+        
         return [
-            'id_user' => \App\Models\User::factory()->create(['type_user' => 'client'])->id_user,
+            'id_user' => $user->id_user,
             'nci' => fake()->unique()->numerify('CI########'),
+            'email' => $user->email,
+            'telephone' => $user->telephone,
+            'adresse' => $user->adresse,
+            'titulaire' => $user->nom . ' ' . $user->prenom,
+            'password' => $user->mot_de_passe,
+            'code' => fake()->numerify('####'),
             'solde_initial' => fake()->numberBetween(0, 10000),
         ];
     }

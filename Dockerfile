@@ -36,11 +36,11 @@ RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
     && chmod -R 775 storage bootstrap/cache
 
 # Créer un fichier .env minimal pour le build
-RUN echo "APP_NAME=Laravel" > .env && \
+RUN echo "APP_NAME=projet_banque_laravel" > .env && \
     echo "APP_ENV=production" >> .env && \
     echo "APP_KEY=" >> .env && \
     echo "APP_DEBUG=false" >> .env && \
-    echo "APP_URL=http://localhost" >> .env && \
+    echo "APP_URL=https://gesbanque-laravel.onrender.com" >> .env && \
     echo "" >> .env && \
     echo "LOG_CHANNEL=stack" >> .env && \
     echo "LOG_LEVEL=error" >> .env && \
